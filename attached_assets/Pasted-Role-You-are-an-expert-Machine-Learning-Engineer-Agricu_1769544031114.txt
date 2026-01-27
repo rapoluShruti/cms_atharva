@@ -1,0 +1,166 @@
+Role
+You are an expert Machine Learning Engineer + Agricultural Domain Specialist.
+Your task is to design and implement an ML-powered Crop Identification & Disease Detection system.
+
+🔹 1. Objective
+
+Build an ML system that:
+
+Takes a crop image as input (captured via camera or uploaded)
+
+Identifies:
+
+Crop type
+
+Disease (if any)
+
+Cause of disease
+
+Provides:
+
+Natural (organic) cure
+
+Chemical cure
+
+Step-by-step prevention & recovery guidance
+
+Outputs:
+
+Confidence score (%)
+
+Severity level (%)
+
+This system must be explainable, practical, and farmer-usable.
+
+🔹 2. Input
+
+Primary input: Image of crop leaf / plant
+
+Optional metadata:
+
+Location (climate influence)
+
+Crop age (if available)
+
+🔹 3. ML Model Requirements
+
+You may use:
+
+Pretrained CNN / Vision models (e.g. ResNet, EfficientNet, MobileNet)
+
+Fine-tuned crop-disease datasets (e.g. PlantVillage or equivalent)
+
+Transfer learning is encouraged
+
+Model responsibilities:
+
+Crop classification
+
+Disease classification
+
+Severity estimation
+
+Confidence scoring
+
+The model must not be a black box — explain predictions.
+
+🔹 4. Output Structure (MANDATORY)
+
+The model must return a structured response like:
+
+{
+  "crop": "Tomato",
+  "disease": "Early Blight",
+  "confidence": 92,
+  "severity": 68,
+  "cause": [
+    "High humidity",
+    "Fungal infection",
+    "Poor air circulation"
+  ],
+  "natural_solution": {
+    "description": "Organic and eco-friendly methods",
+    "steps": [
+      "Remove infected leaves",
+      "Apply neem oil spray every 7 days",
+      "Improve air circulation"
+    ]
+  },
+  "chemical_solution": {
+    "description": "Faster chemical-based treatment",
+    "steps": [
+      "Apply recommended fungicide",
+      "Follow dosage strictly",
+      "Avoid spraying during noon"
+    ]
+  },
+  "preventive_measures": [
+    "Avoid overhead irrigation",
+    "Maintain crop spacing",
+    "Use disease-resistant seeds"
+  ]
+}
+
+🔹 5. Explainability (VERY IMPORTANT)
+
+For every prediction, explain:
+
+Why this crop was identified
+
+Why this disease was detected
+
+Visual or feature-based reasoning (leaf spots, color, texture, etc.)
+
+Farmer must understand the reason, not just the result.
+
+🔹 6. UX Constraints (Model-Aware)
+
+Output must be:
+
+Simple language
+
+Non-technical
+
+Suitable for multilingual translation
+
+Avoid medical / scientific jargon
+
+Focus on actionable advice
+
+🔹 7. Accuracy & Safety
+
+If confidence < 70%:
+
+Clearly say: “Prediction may not be fully accurate”
+
+Suggest expert consultation
+
+Never recommend unsafe chemical usage
+
+Always include safety precautions
+
+🔹 8. Scope Limitation (Important)
+
+This module is:
+
+❌ NOT full app
+
+❌ NOT auth / dashboard
+
+✅ ONLY crop → disease → solution ML pipeline
+
+Design it so it can be plugged into any frontend/backend later.
+
+🔹 9. Deliverables
+
+Generate:
+
+ML architecture
+
+Model choice justification
+
+Training & inference flow
+
+API-ready prediction logic
+
+Example inputs & outpu
