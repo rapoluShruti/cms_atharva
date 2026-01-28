@@ -13,10 +13,12 @@ declare module "http" {
   }
 }
 
+/* ---------- Middlewares ---------- */
+
 app.use(
   express.json({
     verify: (req, _res, buf) => {
-      req.rawBody = buf;
+      (req as any).rawBody = buf;
     },
   }),
 );
@@ -34,10 +36,12 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
+/* ---------- Request Logger ---------- */
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+  let capturedJsonResponse: Record<string, any> | undefined;
 
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {
@@ -52,13 +56,14 @@ app.use((req, res, next) => {
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-
       log(logLine);
     }
   });
 
   next();
 });
+
+/* ---------- App Bootstrap ---------- */
 
 (async () => {
   await registerRoutes(httpServer, app);
@@ -76,9 +81,7 @@ app.use((req, res, next) => {
     return res.status(status).json({ message });
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Production vs Development
   if (process.env.NODE_ENV === "production") {
     serveStatic(app);
   } else {
@@ -86,18 +89,11 @@ app.use((req, res, next) => {
     await setupVite(httpServer, app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || "5000", 10);
-  httpServer.listen(
-    {
-      port,
-      host: "localhost",
-    },
-    () => {
-      log(`serving on port ${port}`);
-    },
-  );
+  /* ---------- RENDER FIX (MOST IMPORTANT) ---------- */
+
+  const port = parseInt(process.env.PORT || "10000", 10);
+
+  httpServer.listen(port, "0.0.0.0", () => {
+    log(`🚀 Server running on port ${port}`);
+  });
 })();
