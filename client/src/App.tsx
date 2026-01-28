@@ -34,8 +34,9 @@ function Router() {
       <Route path="/" component={CropSelection}/>
       <Route path="/home" component={Home}/>
       <Route path="/login" component={Login}/>
+       <Route path="/map" component={FarmerMap}/>
       <Route path="/profile" component={Profile}/>
-      <Route path="/map" component={FarmerMap}/>
+     
       <Route path="/analysis/current" component={Analysis}/>
       <Route path="/analysis/view" component={Analysis}/>
       <Route path="/chat" component={Chat}/>
