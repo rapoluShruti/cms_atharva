@@ -9,7 +9,7 @@ import Login from "@/pages/Login";
 import Profile from "@/pages/Profile";
 import FarmerMap from "@/pages/Map";
 import CropSelection from "@/pages/CropSelection";
-import DailyLogging from "@/pages/DailyLogging";
+
 import WithdrawalTracker from "@/pages/WithdrawalTracker";
 import WeatherAlerts from "@/pages/WeatherAlerts";
 import GovernmentSchemes from "@/pages/GovernmentSchemes";
@@ -17,9 +17,20 @@ import HelplineAccess from "@/pages/HelplineAccess";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 
+
+import Dashboard from "./pages/Dashboard";
+import Demo from "./pages/Demo";
+import Abc from "./pages/Abc";
+import DclDemo from "./pages/DclDemo";
+import Navbar from "./pages/Nav";
+
+
 function Router() {
   return (
+  <>
+<Navbar/>
     <Switch>
+      
       <Route path="/" component={CropSelection}/>
       <Route path="/home" component={Home}/>
       <Route path="/login" component={Login}/>
@@ -28,14 +39,18 @@ function Router() {
       <Route path="/analysis/current" component={Analysis}/>
       <Route path="/analysis/view" component={Analysis}/>
       <Route path="/chat" component={Chat}/>
-      <Route path="/logging" component={DailyLogging}/>
+         <Route path="/demo" component={Demo}/>
       <Route path="/withdrawal" component={WithdrawalTracker}/>
       <Route path="/weather" component={WeatherAlerts}/>
       <Route path="/schemes" component={GovernmentSchemes}/>
       <Route path="/helpline" component={HelplineAccess}/>
-      <Route path="/daily" component={DailyLogging}/>
+
+      <Route path="/digital" component={Dashboard}/>
+        <Route path="/dcl" component={DclDemo}/>
+  
       <Route component={NotFound} />
     </Switch>
+    </>
   );
 }
 
