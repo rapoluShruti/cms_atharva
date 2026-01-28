@@ -5,29 +5,81 @@ import { Toaster } from "@/components/ui/toaster";
 import Home from "@/pages/Home";
 import Analysis from "@/pages/Analysis";
 import Chat from "@/pages/Chat";
+import Login from "@/pages/Login";
+import Profile from "@/pages/Profile";
+import FarmerMap from "@/pages/Map";
+import CropSelection from "@/pages/CropSelection";
+import DailyLogging from "@/pages/DailyLogging";
+import WithdrawalTracker from "@/pages/WithdrawalTracker";
+import WeatherAlerts from "@/pages/WeatherAlerts";
+import GovernmentSchemes from "@/pages/GovernmentSchemes";
+import HelplineAccess from "@/pages/HelplineAccess";
 import NotFound from "@/pages/not-found";
+import { useEffect } from "react";
 
 function Router() {
   return (
-    <div className="min-h-screen bg-emerald-50/30">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <Switch>
-          <Route path="/" component={Home}/>
-          <Route path="/analysis/current" component={Analysis}/>
-          <Route path="/analysis/view" component={Analysis}/>
-          <Route path="/chat" component={Chat}/>
-          <Route component={NotFound} />
-        </Switch>
-      </div>
-    </div>
+    <Switch>
+      <Route path="/" component={CropSelection}/>
+      <Route path="/home" component={Home}/>
+      <Route path="/login" component={Login}/>
+      <Route path="/profile" component={Profile}/>
+      <Route path="/map" component={FarmerMap}/>
+      <Route path="/analysis/current" component={Analysis}/>
+      <Route path="/analysis/view" component={Analysis}/>
+      <Route path="/chat" component={Chat}/>
+      <Route path="/logging" component={DailyLogging}/>
+      <Route path="/withdrawal" component={WithdrawalTracker}/>
+      <Route path="/weather" component={WeatherAlerts}/>
+      <Route path="/schemes" component={GovernmentSchemes}/>
+      <Route path="/helpline" component={HelplineAccess}/>
+      <Route path="/daily" component={DailyLogging}/>
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 
 function App() {
+  useEffect(() => {
+    // Google Translate Widget Setup
+    (window as any).gtranslateSettings = {
+      default_language: "en",
+      languages: [
+        "en", "es", "fr", "de", "zh", "ja", "ar", "pt", "hi", "ru"
+      ],
+      wrapper_selector: ".gtranslate_wrapper",
+      flag_size: 28,
+      horizontal_position: "right",
+      vertical_position: "top",
+      native_language_names: true,
+    };
+
+    const script = document.createElement("script");
+    script.src = "https://cdn.gtranslate.net/widgets/latest/float.js";
+    script.defer = true;
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      try {
+        document.body.removeChild(script);
+      } catch (e) {
+        // Script already removed
+      }
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <Toaster />
-      <Router />
+      <div className="min-h-screen bg-emerald-50/30">
+        {/* Google Translate Widget */}
+        <div className="gtranslate_wrapper" style={{ position: "fixed", top: "10px", right: "10px", zIndex: 9999 }}></div>
+        
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <Toaster />
+          <Router />
+        </div>
+      </div>
     </QueryClientProvider>
   );
 }

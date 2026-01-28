@@ -1,159 +1,396 @@
 import { useLocation } from "wouter";
 import { useHistory, useAnalyzeImage } from "@/hooks/use-analysis";
 import { FileUpload } from "@/components/ui/FileUpload";
-import { Sprout, Clock, ChevronRight, Loader2, SearchX } from "lucide-react";
+import {
+  Clock,
+  Loader2,
+  TrendingUp,
+  AlertTriangle,
+  Menu,
+  X,
+  Leaf,
+  ChevronRight,
+  Zap,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 export default function Home() {
   const [, setLocation] = useLocation();
   const { data: history, isLoading: historyLoading } = useHistory();
   const { mutate: analyze, isPending: isAnalyzing } = useAnalyzeImage();
+  const [showQuickMenu, setShowQuickMenu] = useState(false);
+
+  const selectedCrop = localStorage.getItem("selectedCrop") || "wheat";
 
   const handleFileSelect = (base64: string) => {
-    analyze({ image: base64 }, {
-      onSuccess: (data) => {
-        // Pass result via state or cache. 
-        // For simplicity with wouter, we could store in global state/context 
-        // or just rely on the history update. 
-        // Let's pass the data in navigation state if possible, 
-        // but wouter state is limited. We'll use local storage or just navigate to history detail if we had IDs.
-        // Since the analyze response doesn't give an ID immediately (it might not be persisted yet or backend logic varies),
-        // we will pass the result in state if we were using React Router.
-        // For now, let's navigate to a special 'latest' view or refetch history.
-        // Actually, let's render the result in place or navigate to a Result page passing the object in state.
-        
-        // BETTER UX: Since wouter doesn't support complex state passing easily without a store, 
-        // we'll assume the backend persists it and returns it.
-        // If the backend returns the object, we can display it.
-        // Let's assume we want to show it immediately.
-        // For this demo, I'll store the "lastAnalysis" in localStorage/sessionStorage to pick it up on the result page.
-        sessionStorage.setItem("lastAnalysis", JSON.stringify({ result: data, image: base64 }));
-        setLocation("/analysis/current");
+    analyze(
+      { image: base64 },
+      {
+        onSuccess: (data) => {
+          sessionStorage.setItem("lastAnalysis", JSON.stringify({ result: data, image: base64 }));
+          setLocation("/analysis/current");
+        },
       }
-    });
+    );
   };
 
-  return (
-    <div className="px-6 py-6 space-y-8">
-      {/* Hero Section */}
-      <section className="space-y-4">
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-2"
-        >
-          <h1 className="text-4xl leading-tight text-emerald-950">
-            Heal your crops,<br />
-            <span className="text-emerald-600">secure your harvest.</span>
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            Instant disease detection with expert-backed cures.
-          </p>
-        </motion.div>
+  // Quick menu items
+  const quickMenuItems = [
+    {
+      id: "logging",
+      title: "Daily Log",
+      icon: "📝",
+      color: "from-blue-600 to-cyan-600",
+      action: () => setLocation("/logging"),
+    },
+    {
+      id: "safety",
+      title: "Pesticide Safety",
+      icon: "⚠️",
+      color: "from-red-600 to-rose-600",
+      action: () => setLocation("/withdrawal"),
+    },
+    {
+      id: "weather",
+      title: "Weather Alerts",
+      icon: "🌧️",
+      color: "from-purple-600 to-blue-600",
+      action: () => setLocation("/weather"),
+    },
+    {
+      id: "schemes",
+      title: "Govt. Schemes",
+      icon: "🎁",
+      color: "from-yellow-600 to-orange-600",
+      action: () => setLocation("/schemes"),
+    },
+    {
+      id: "help",
+      title: "Get Help",
+      icon: "☎️",
+      color: "from-pink-600 to-rose-600",
+      action: () => setLocation("/helpline"),
+    },
+  ];
 
-        {/* Action Buttons */}
-        <div className="pt-4">
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 pb-24">
+      {/* Premium Header */}
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="sticky top-0 z-40 border-b border-slate-700/50 backdrop-blur-xl bg-slate-900/80"
+      >
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <motion.div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg">
+              <Leaf className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Crop Companion</p>
+              <h1 className="text-lg font-bold text-white capitalize flex items-center gap-2">
+                {selectedCrop}
+                <Zap className="w-4 h-4 text-emerald-400" />
+              </h1>
+            </div>
+          </motion.div>
+
+          <motion.button
+            onClick={() => setShowQuickMenu(!showQuickMenu)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-300"
+          >
+            {showQuickMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </motion.button>
+        </div>
+      </motion.div>
+
+      {/* Side Menu */}
+      {showQuickMenu && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black/50 z-30"
+          onClick={() => setShowQuickMenu(false)}
+        >
+          <motion.div
+            initial={{ x: -400 }}
+            animate={{ x: 0 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-gradient-to-b from-slate-800 to-slate-900 w-80 h-full p-6 border-r border-slate-700 flex flex-col"
+          >
+            <h2 className="text-2xl font-bold text-white mb-6">Menu</h2>
+
+            <div className="space-y-2 flex-1">
+              {quickMenuItems.map((item) => (
+                <motion.button
+                  key={item.id}
+                  whileHover={{ x: 5 }}
+                  onClick={() => {
+                    item.action();
+                    setShowQuickMenu(false);
+                  }}
+                  className="w-full p-4 text-left rounded-lg bg-slate-700/50 hover:bg-slate-600 transition-all duration-200 text-white font-semibold flex items-center gap-4 group"
+                >
+                  <span className="text-2xl group-hover:scale-110 transition-transform">{item.icon}</span>
+                  <span>{item.title}</span>
+                  <ChevronRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform" />
+                </motion.button>
+              ))}
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                setLocation("/");
+                setShowQuickMenu(false);
+              }}
+              className="w-full p-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
+            >
+              Change Crop
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      )}
+
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+        {/* Primary CTA - Disease Detection */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="relative"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-green-500/20 rounded-2xl blur-2xl" />
           <FileUpload onFileSelect={handleFileSelect} isLoading={isAnalyzing} />
+
           {isAnalyzing && (
-            <motion.div 
-              initial={{ opacity: 0 }} 
+            <motion.div
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="mt-4 p-4 bg-emerald-50 rounded-xl flex items-center gap-3 text-emerald-800"
+              className="mt-4 p-4 bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/30 rounded-xl backdrop-blur-sm flex items-center gap-3 text-emerald-300"
             >
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="font-medium">Analyzing your crop...</span>
+              <span className="font-semibold text-sm">Analyzing crop health...</span>
             </motion.div>
           )}
-        </div>
-      </section>
+        </motion.div>
 
-      {/* Recent Activity */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <Clock className="w-5 h-5 text-emerald-600" />
-            Recent Scans
-          </h2>
-        </div>
+        {/* Quick Actions Grid - 2x3 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-2 md:grid-cols-3 gap-3"
+        >
+          {quickMenuItems.map((item, idx) => (
+            <motion.button
+              key={item.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 + idx * 0.05 }}
+              whileHover={{ y: -5, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
+              whileTap={{ scale: 0.95 }}
+              onClick={item.action}
+              className="group relative p-5 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 hover:border-slate-600 overflow-hidden transition-all duration-300"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{
+                backgroundImage: `linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(34,197,94,0.1) 100%)`
+              }} />
+              <div className="relative z-10 flex flex-col items-center text-center gap-2">
+                <span className="text-3xl group-hover:scale-125 transition-transform duration-300">{item.icon}</span>
+                <p className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">{item.title}</p>
+              </div>
+            </motion.button>
+          ))}
+        </motion.div>
 
-        {historyLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-20 bg-gray-100 animate-pulse rounded-2xl" />
-            ))}
-          </div>
-        ) : history?.length === 0 ? (
-          <div className="text-center py-12 bg-white/50 rounded-3xl border border-dashed border-emerald-200">
-            <div className="bg-emerald-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-              <SearchX className="w-6 h-6 text-emerald-600" />
+        {/* Status Cards Section */}
+        <div className="space-y-4">
+          {/* Current Crop Card */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="group relative rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 p-6 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="relative z-10 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Current Crop</p>
+                <p className="text-3xl font-bold text-white capitalize mt-2">{selectedCrop}</p>
+              </div>
+              <span className="text-6xl opacity-20 group-hover:opacity-40 transition-opacity">🌾</span>
             </div>
-            <p className="text-muted-foreground font-medium">No scans yet</p>
-            <p className="text-sm text-muted-foreground/80 mt-1">Take a photo to get started</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {history?.map((item, idx) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, x: -10 }}
+          </motion.div>
+
+          {/* Last Analysis Card */}
+          {historyLoading ? (
+            <div className="h-24 bg-slate-800 rounded-2xl border border-slate-700 animate-pulse" />
+          ) : history && history.length > 0 ? (
+            <motion.button
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.35 }}
+              onClick={() => {
+                const item = history[0];
+                const mappedResult = {
+                  result: {
+                    crop: item.crop,
+                    disease: item.disease,
+                    confidence: item.confidence,
+                    severity: item.severity,
+                    causes: item.causes,
+                    natural_solution: item.naturalCure as any,
+                    chemical_solution: item.chemicalCure as any,
+                    preventive_measures: item.prevention,
+                  },
+                  image: item.imageUrl,
+                };
+                sessionStorage.setItem("lastAnalysis", JSON.stringify(mappedResult));
+                setLocation("/analysis/view");
+              }}
+              whileHover={{ y: -5, boxShadow: "0 20px 40px rgba(59,130,246,0.15)" }}
+              className="w-full group relative rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-blue-700/50 p-6 overflow-hidden text-left transition-all duration-300"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent" />
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <p className="text-xs font-semibold text-blue-300 uppercase tracking-widest">Last Disease Detected</p>
+                    <p className="text-2xl font-bold text-white mt-1">{history[0].disease}</p>
+                  </div>
+                  <span className="text-4xl">🔬</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-400">
+                    {formatDistanceToNow(new Date(history[0].timestamp), { addSuffix: true })}
+                  </span>
+                  <span className="text-blue-400 font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                    View Details <ChevronRight className="w-4 h-4" />
+                  </span>
+                </div>
+              </div>
+            </motion.button>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 p-8 text-center"
+            >
+              <p className="text-5xl mb-4">📸</p>
+              <p className="text-lg font-bold text-white">No Analysis Yet</p>
+              <p className="text-sm text-slate-400 mt-2">Take a photo to detect crop diseases</p>
+            </motion.div>
+          )}
+
+          {/* Daily Log Card */}
+          {(() => {
+            const logs = JSON.parse(localStorage.getItem("dailyLogs") || "[]");
+            const today = new Date().toLocaleDateString();
+            const todayLog = logs.find(
+              (log: any) => new Date(log.date).toLocaleDateString() === today
+            );
+
+            return (
+              <motion.button
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                onClick={() => {
-                  // Re-construct the full object structure expected by the result page
-                  // The DB schema stores flattened data, but our UI expects nested objects (natural_cure, etc.)
-                  // We need to map it back.
-                  const mappedResult = {
-                    result: {
-                      crop: item.crop,
-                      disease: item.disease,
-                      confidence: item.confidence,
-                      severity: item.severity,
-                      causes: item.causes,
-                      natural_solution: item.naturalCure as any,
-                      chemical_solution: item.chemicalCure as any,
-                      preventive_measures: item.prevention
-                    },
-                    image: item.imageUrl
-                  };
-                  sessionStorage.setItem("lastAnalysis", JSON.stringify(mappedResult));
-                  setLocation("/analysis/view");
-                }}
-                className="bg-white p-3 rounded-2xl shadow-sm border border-emerald-50 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer group"
+                transition={{ delay: 0.4 }}
+                onClick={() => setLocation("/logging")}
+                whileHover={{ y: -5, boxShadow: "0 20px 40px rgba(139,92,246,0.15)" }}
+                className="w-full group relative rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-purple-700/50 p-6 overflow-hidden text-left transition-all duration-300"
               >
-                <div className="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 relative">
-                   {/* In a real app we'd load the image URL. For base64 it might be heavy for a list, 
-                       but let's assume thumbnail or lazy load. */}
-                   {item.imageUrl ? (
-                     <img src={item.imageUrl} alt={item.crop} className="w-full h-full object-cover" />
-                   ) : (
-                     <Sprout className="w-8 h-8 text-emerald-300 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                   )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-bold text-gray-900 truncate">{item.disease}</h3>
-                    <span className="text-[10px] font-medium text-muted-foreground bg-gray-100 px-2 py-0.5 rounded-full">
-                      {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}
-                    </span>
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent" />
+                <div className="relative z-10 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-purple-300 uppercase tracking-widest">
+                      {todayLog ? "✓ Daily Log Updated" : "📝 Daily Observation"}
+                    </p>
+                    <p className="text-xl font-bold text-white mt-1">
+                      {todayLog ? "Ready for next update" : "Add today's notes"}
+                    </p>
                   </div>
-                  <p className="text-sm text-emerald-600 font-medium truncate">{item.crop}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="h-1.5 flex-1 bg-gray-100 rounded-full overflow-hidden max-w-[100px]">
-                      <div 
-                        className={`h-full rounded-full ${item.severity > 70 ? 'bg-red-500' : 'bg-yellow-500'}`} 
-                        style={{ width: `${item.severity}%` }}
-                      />
+                  <span className="text-3xl">{todayLog ? "✅" : "📝"}</span>
+                </div>
+              </motion.button>
+            );
+          })()}
+
+          {/* Safety Status Card */}
+          {(() => {
+            const pesticides = JSON.parse(localStorage.getItem("pesticides") || "[]");
+            const activePesticides = pesticides.filter((p: any) => {
+              const safe = new Date(p.safeDate);
+              const today = new Date();
+              return safe > today;
+            });
+
+            return (
+              <motion.button
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.45 }}
+                onClick={() => setLocation("/withdrawal")}
+                whileHover={{ y: -5 }}
+                className={`w-full group relative rounded-2xl p-6 overflow-hidden text-left transition-all duration-300 border ${
+                  activePesticides.length > 0
+                    ? "bg-gradient-to-br from-red-900/30 to-slate-900 border-red-700/50"
+                    : "bg-gradient-to-br from-green-900/30 to-slate-900 border-green-700/50"
+                }`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300"  style={{
+                  backgroundImage: activePesticides.length > 0 
+                    ? `linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(185,28,28,0.1) 100%)`
+                    : `linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(16,185,129,0.1) 100%)`
+                }} />
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className={`text-xs font-semibold uppercase tracking-widest ${
+                        activePesticides.length > 0 ? "text-red-300" : "text-green-300"
+                      }`}>
+                        {activePesticides.length > 0
+                          ? `⚠️ ${activePesticides.length} Active Withdrawal`
+                          : "✓ Safe to Harvest"}
+                      </p>
+                      <p className={`text-xl font-bold mt-1 ${
+                        activePesticides.length > 0 ? "text-red-300" : "text-green-300"
+                      }`}>
+                        {activePesticides.length > 0 ? "Check before selling" : "All clear to harvest!"}
+                      </p>
                     </div>
-                    <span className="text-[10px] text-muted-foreground">{item.severity}% Sev</span>
+                    <span className="text-4xl">{activePesticides.length > 0 ? "⏳" : "✅"}</span>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-emerald-500 transition-colors" />
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </section>
+              </motion.button>
+            );
+          })()}
+
+          {/* Weather Summary */}
+          <motion.button
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 }}
+            onClick={() => setLocation("/weather")}
+            whileHover={{ y: -5, boxShadow: "0 20px 40px rgba(59,130,246,0.15)" }}
+            className="w-full group relative rounded-2xl bg-gradient-to-br from-blue-900/30 to-slate-900 border border-blue-700/50 p-6 overflow-hidden text-left transition-all duration-300"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent" />
+            <div className="relative z-10 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-blue-300 uppercase tracking-widest">Weather & Alerts</p>
+                <p className="text-xl font-bold text-white mt-1">Check 3-day forecast</p>
+              </div>
+              <span className="text-3xl">🌧️</span>
+            </div>
+          </motion.button>
+        </div>
+      </div>
     </div>
   );
 }
